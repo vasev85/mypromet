@@ -1,0 +1,43 @@
+#scrape_configs:
+#  - job_name: node
+#    scrape_interval: 5s
+#    static_configs:
+#    - targets: ['node-exporter:9100']
+scrape_configs:
+  - job_name: "node"
+    file_sd_configs:
+    - files:
+      - /etc/prometheus/sd_files/nodeexporter.yml
+      refresh_interval: 1m
+      
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - https://www.mail.ru
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
+
+  - job_name: 'cadvisor'
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['cadvisor:8080']
+      labels:
+        alias: 'cadvisor'
+rule_files:
+  - 'alert.rules'
+  - 'docker.rules'
+
+alerting:
+  alertmanagers:
+  - scheme: http
+    static_configs:
+    - targets:
+      - "alertmanager:9093"

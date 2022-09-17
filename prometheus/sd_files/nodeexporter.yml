@@ -1,0 +1,11 @@
+- targets:
+  - 'exporter:9100'
+  labels:
+    project: 'localhost'
+    env: 'docker'
+
+- targets:
+  - '192.168.1.6:9100'
+  labels:
+    project: 'mac'
+    env: 'mac'

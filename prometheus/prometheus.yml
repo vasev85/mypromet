@@ -31,6 +31,15 @@ scrape_configs:
     - targets: ['cadvisor:8080']
       labels:
         alias: 'cadvisor'
+        project: 'localhost'
+
+  - job_name: 'prometheus'
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['prometheus:9090']
+      labels:
+        alias: 'prometheus'
+        project: 'localhost'
 rule_files:
   - 'alert.rules'
   - 'docker.rules'

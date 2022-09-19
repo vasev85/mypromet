@@ -1,8 +1,15 @@
+global:
+    resolve_timeout: 2m
+   
 route:
+    group_wait: 30s
+    repeat_interval: 1h
     receiver: 'alertmanager'
+    
 
 receivers:
 - name: 'alertmanager'
+  
   webhook_configs:
   - send_resolved: true
     url: 'http://alertmanager-bot:8080'

@@ -1,0 +1,56 @@
+---
+- hosts: all
+  become: yes
+  user: root
+  
+  tasks:
+
+  - name: Ensure that vim editor installed.
+    yum: name=vim state=present
+
+  #- name: Change ssh config
+#    lineinfile:
+#      path: /etc/ssh/sshd_config
+#      regexp: '^PasswordAuthentication'
+#      line: PasswordAuthentication yes
+
+  - copy: 
+        src: "./configs/sshd_config" 
+        dest: "/etc/ssh/sshd_config"
+        
+  - name: Add user to remote hosts
+    user: name=ansible groups=wheel shell=/bin/bash append=yes password=$6$pPa0mSl/ONIk3M1R$d7gay.2em4zG2nO2IAdBBNCuKPbLiA7g.AcCD.i3WmhMQt1mv8yW4PcNKwNRmey2j1lEEdce1Q6OQfv6feoPc0
+  - name: Создать 2048-битовый SSH ключ 
+    user:
+      name: ansible
+      generate_ssh_key: yes
+      ssh_key_bits: 2048
+      ssh_key_file: .ssh/id_rsa
+  - name: Add SSH keys to remote hosts
+    authorized_key: user=ansible key="{{ lookup('file', '/Users/mimac15-8/.ssh/id_rsa.pub') }}"
+    
+  - name: Allow 'wheel' group to have passwordless sudo
+    lineinfile:
+     dest: /etc/sudoers
+     state: present
+     regexp: '^%wheel'
+     line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+     validate: 'visudo -cf %s'
+#---------------------on client
+# ssh-copy-id -i ~/.ssh/id_rsa.pub root@remoteHost 
+# 123456--pasword-hash
+#--------------------------------------------    
+    notify:
+      - Restart sshd
+  - name: See IP
+    debug:
+      msg: "{{ ansible_facts.all_ipv4_addresses }}"
+
+  handlers:
+  - name: Restart sshd
+    environment:
+        PATH: $PATH:/usr/local/bin 
+    service:
+      name: sshd
+      state: restarted
+  
